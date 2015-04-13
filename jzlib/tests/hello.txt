@@ -1,0 +1,74 @@
+Now checking whether all configure args valid: YES
+Current device information:
+CPU type is Ingenic XBurst Jz4740
+Crystal work at 12MHz, the CCLK up to 228MHz and PMH_CLK up to 76MHz
+SDRAM Total size is 64 MB, work in 4 bank and 16 bit mode
+Nand page per block 128, Nand page size 4096, ECC offset in OOB 24, bad block offset in OOB 0, bad block page 127, use 1 plane mode
+usbboot :> boot
+ CPU data: JZ4750V1
+boot(1) status 2 cpu_id = 4750 
+ CPU not yet booted, now booting...
+ Loading stage1 from '/usr/share/xburst-tools/xburst_stage1.bin'
+load_file() cpu_id = 4750 
+ Download stage 1 program and execute at 0x80002000
+ CPU data: JZ4750V1
+ Loading stage2 from '/usr/share/xburst-tools/xburst_stage2.bin'
+load_file() cpu_id = 4750 
+ Download stage 2 program and execute at 0x83c00000
+ CPU data: JZ4750V1
+ CPU data: Boot4750
+ Booted successfully!
+ CPU data: Boot4750
+ Configuring XBurst CPU succeeded.
+usbboot :> exec hello.bin -a -c -f aaa zzz
+ Total size to send in byte is :15408
+ Loading data to SDRAM :
+ CPU data: Boot4750
+ Load last address at 0x80600000
+ start:::::: 0x80600000
+ CPU data: Boot4750
+ Load last address at 0x83d08280
+ Executing address 0x80600000
+  cmdline [-a -c -f aaa zzz]
+usbboot :> msg
+ CPU data: Boot4750
+msg_read: 839 (347)
+
+ Stage2 start address is :	0x83C00000
+ Address offset is:	0x03C00000
+ GOT correct to :	0x83C06E60
+ Init UDC
+ GET_CPU_INFO:	0xA5A5A5A5
+ GET_CPU_INFO:	0xA5A5A5A5
+ Configuration:	DS_hand_t!
+ Borad_init! 0x00004750
+ GET_CPU_INFO:	0x00004750
+ SET ADDRESS:	0x80600000
+ DATA_LENGTH:	0x00003C30
+ GET_CPU_INFO:	0x00004750
+ SET ADDRESS:	0x00000000
+ DATA_LENGTH:	0x00000100
+ Execute program at 0x80600000
+ Command line: -a -c -f aaa zzz
+ comm_area addr:0x83D07160
+ proc_func addr:0x83C00DD4
+XXX hello world 1 XXX 
+XXX hello world 2 XXX 
+XXX hello world 3 XXX 2 0x83d07160
+cmdline [-a -c -f aaa zzz]
+parse_args result 6
+arg 1 = [-a]
+arg 2 = [-c]
+arg 3 = [-f]
+arg 4 = [aaa]
+arg 5 = [zzz]
+getopt test
+  option a
+  option c
+  option f [zzz]
+
+ GET_CPU_INFO:	0x00004750
+ SET ADDRESS:	0x00000000
+ DATA_LENGTH:	0x00001000
+--- end
+usbboot :> exit

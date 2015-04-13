@@ -1,0 +1,190 @@
+標準ライブラリ
+
+標準ライブラリは、avr-libc をベースにしている。avi-libc のソースでビルド
+できないものは、他から ソースを持ってきているが、API はあまり変更がないように
+している。
+
+とは言え、ベースが違うので 仕様が違うものがある。また、USBBOOT から起動する
+ので パラメータ処理 用関数を追加するなど、独自に追加したものもある。
+
+(avr-libc との差分を記述予定 )
+
+Jz47xx 用 API
+
+Jz47xx 用 API の定義はすべて、include/jz ディレクトリにある。
+以下 のヘッダについて それぞれ説明する。
+
+	jz/console.h
+	jz/interrupt.h
+	jz/wdt.h
+	jz/timer.h
+	jz/ostimer.h
+	jz/jz_core.h
+
+その他の jz/jz_xx.h は Jz47xx デバイスのレジスタの定義であり これらに
+ついては説明しない。
+
+jz/jz_aic.h   jz/jz_i2c.h       jz/jz_mc.h     jz/jz_rtc.h   jz/jz_uart.h
+jz/jz_base.h  jz/jz_icdc.h      jz/jz_me.h     jz/jz_sadc.h  jz/jz_udc.h
+jz/jz_bch.h   jz/jz_intc.h      jz/jz_midct.h  jz/jz_slcd.h  jz/jz_wdt.h
+jz/jz_ipu.h   jz/jz_msc.h       jz/jz_ssi.h
+jz/jz_cpm.h   jz/jz_lcd.h       jz/jz_otp.h    jz/jz_tcu.h
+jz/jz_dmac.h  jz/jz_lcd_ops4.h  jz/jz_owi.h    jz/jz_tssi.h
+jz/jz_emc.h   jz/jz_lcd_ops5.h  jz/jz_pcm.h    jz/jz_tve.h
+
+
+(説明)
+
+jz/console.h :
+
+printf を使うためのドライバ。
+
+extern void serial_init(void);
+extern void serial_putc(const char c);
+extern FILE *fdopen_serial(FILE *fp);
+
+UART0 に 出力する ためのドライバ 。ボーレートは、57600 固定。
+フォーマットは、(8-bit data, 1 stopbit, no parity)
+
+serial_init/serial_putc は、下位レベル関数。
+printf を使うには、fdopen_serial() を call するだけで良い。
+( 以下 fdopen_xx のパラメータは、
+  FILE 構造体へのポインタ + xx_init のパラメータ )
+
+fdopen_serial() では、FILE 構造体 *fp に対して fprintf が使えるように
+設定する。なお、fp に NULL を渡すと FILE 構造体を アロケートする。
+
+戻り値が NULL の場合はエラー。
+
+extern void ubcomm_proc();
+extern void ubcomm_putc(const char c);
+extern void ubcomm_init(void *p);
+extern FILE *fdopen_ubcomm(FILE *fp, void *p);
+
+USBBOOT を通じてメッセージを出力するためのドライバ
+
+ubcomm_init のパラメータ p は、c_main の argv の値で、ここから 通信エリアの
+場所を計算する。
+
+ubcomm_proc() を ポーリングで call しないと 動かない。
+
+extern int fg_color, bg_color;
+extern void ILI9325_Init(int reset, int cs, int backlight);
+extern void ILI9325_Pixel(int x, int y, int color);
+extern void ILI9325_Char(int x, int y, int ch);
+extern void ILI9325_Scroll(int height);
+extern void ILI9325_Text(char *str);
+extern FILE *fdopen_ili9325(FILE *fp, int reset, int cs, int backlight);
+
+ILI9325 を使った LCD を制御するためのドライバ。
+reset / cs ピンのポート番号 および backlight のポート番号を指定する
+必要がある。
+
+0 を渡した場合 A-41 の 設定を使用する。
+
+
+extern void ILI9326_Init(int reset, int cs, int backlight);
+extern void ILI9326_Pixel(int x, int y, int color);
+extern void ILI9326_Char(int x, int y, int ch);
+extern void ILI9326_Scroll(int height);
+extern void ILI9326_Text(char *str);
+extern FILE *fdopen_ili9326(FILE *fp, int reset, int cs, int backlight);
+
+ILI9326 を使った LCD を制御するためのドライバ。
+reset / cs ピンのポート番号 および backlight のポート番号を指定する
+必要がある。
+
+0 を渡した場合 A-33 の 設定を使用する。
+
+extern void jzcon_append(FILE *fp);
+extern void jzcon_setup();
+
+jz/interrupt.h : 
+
+SIGNAL(irq)
+
+割り込み関数の定義。irq は 0-31 で、jz/jz_intc.h で IRQ_XX として
+定義されている。
+
+jz/wdt.h
+
+wdt_reset()
+wdt_enable(value)  
+wdt_disable()
+
+avr-libc 流の WDT ハンドリング API 。
+
+value には以下のものが使える。
+
+WDTO_15MS , WDTO_30MS , WDTO_60MS , WDTO_120MS 
+WDTO_250MS , WDTO_500MS , WDTO_1S , WDTO_2S
+
+WDTO_4S , WDTO_8S , WDTO_16S , WDTO_32S , WDTO_64S
+WDTO_128S
+
+jz/timer.h : 
+
+インターバルタイマ
+
+int timer_hz();
+void __timer_start(uint32_t tcsr, int interval);
+void timer_start(int hz);
+void timer_stop();
+
+定期的に 割り込みを発生させ、割り込み処理で、登録された関数を callback する。
+
+timer_start() の引数 hz 割り込み間隔を Hz にした値で、
+TIMER_HZ_MIN TIMER_HZ_MAX の間の値を指定できる。
+TIMER_HZ_DEFAULT は 100 Hz 。
+
+timer_hz() は、実際に設定された 割り込み間隔を 計算する。
+
+jz/ostimer.h :
+
+extern uint32_t ostimer32();
+extern uint64_t ostimer64();
+extern int ostimer_clk();
+extern void __ostimer_start(uint32_t ostcsr);
+extern void ostimer_start(int is_fast);
+extern void ostimer_stop();
+
+時刻用タイマ
+
+
+
+jz/jz_core.h :
+
+static inline unsigned long read_c0_status() {
+static inline void write_c0_status(unsigned long c) {
+
+static inline unsigned long read_c0_cause() {
+
+static inline void write_c0_cause(unsigned long c) {
+
+static inline unsigned long read_c0_epc() {
+static inline void write_c0_epc(unsigned long c) {
+
+static inline unsigned long read_c0_prid() {
+
+static inline unsigned long read_c0_errorepc() {
+static inline void write_c0_errorepc(unsigned long c) {
+
+static inline void __irq_enable(void)
+
+static inline unsigned long irq_disable()
+static inline void irq_restore(unsigned long c)
+
+static inline void __delay_loop_1(unsigned int loops)
+
+extern void delay_us(unsigned int us);
+extern void delay_ms(unsigned int ms);
+
+extern void __flush_dcache_line(unsigned long addr);
+extern void __icache_invalidate_all(void);
+extern void __dcache_invalidate_all(void);
+extern void __dcache_writeback_all(void);
+#define ICACHE  0x01                    /* invalidate I-cache */
+#define DCACHE  0x02                    /* writeback and invalidate D-cache */
+#define BCACHE  (ICACHE|DCACHE)         /* invalidate both caches, as above */
+
+int _cacheflush( void * addr, int nbytes, int whichcache);

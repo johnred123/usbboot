@@ -1,0 +1,27 @@
+XXX hello world XXX 2 0x83d07160
+c0_status    0x1240ce00
+c0_prid      0x1ed0024f
+
+is4725B      0x80000000
+
+otp_id0      0x00000003
+otp_id1      0x00000003
+otp_id2      0x00000003
+otp_id3      0x00000003
+otp_hw0      0x00000003
+otp_hw1      0x00000003
+
+otp_product  0x01
+otp_fundary  0x00
+otp_mask     0x00
+otp_wafer    0x0000
+otp_lot      0x000000
+otp_xadr     0x00
+otp_yadr     0x00
+otp_tdate    0x0001
+   mc 0 me 0 de 0 idct 0
+   uart3 0 uart2 0 uart1 0 uart0 0
+    ssi1 0 ssi0 0 msc1 0 msc0 0
+    uhc 0 tve 0 tssi 0 cim 3
+cpuclock     228000000
+memsize      0x04000000

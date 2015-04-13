@@ -1,0 +1,32 @@
+#
+# Authors: Xiangfu Liu <xiangfu@qi-hardware.com>
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version
+# 3 of the License, or (at your option) any later version.
+#
+
+ifeq ($(CROSS_COMPILE),)
+$(error CROSS_COMPILE variable not set, should point to .../mipsel-openwrt-linux-)
+endif
+
+#CFLAGS	?= -O2 -fno-unit-at-a-time -fno-zero-initialized-in-bss -mips32 \
+#	-fno-pic  -mno-abicalls -mno-shared
+CFLAGS  ?= -O2 -fno-zero-initialized-in-bss -mips32 -fno-pic -msoft-float -Wall
+CFLAGS += -I../include -I.. -I.
+
+OBJS	= clearerr.o fclose.o fdevopen.o feof.o ferror.o fgetc.o fgets.o \
+	fprintf.o fputc.o fputs.o fread.o fscanf.o fwrite.o getchar.o \
+	gets.o iob.o printf.o putchar.o puts.o scanf.o snprintf.o sprintf.o \
+	sscanf.o ungetc.o vfscanf.o vprintf.o vscanf.o \
+	vsnprintf.o vsprintf.o
+
+all: $(OBJS)
+
+.c.o:
+	$(CROSS_COMPILE)gcc $(CFLAGS) -c $< -o $@
+.S.o:
+	$(CROSS_COMPILE)gcc $(CFLAGS) -c $< -o $@
+clean:
+	rm -f $(OBJS)
